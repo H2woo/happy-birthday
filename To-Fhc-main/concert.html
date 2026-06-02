@@ -28,7 +28,7 @@
     display: flex;
     gap: 16px;
     z-index: 10;
-  }
+}
   #controls button {
     font-family: 'Courier New', monospace;
     cursor: pointer;
@@ -38,11 +38,11 @@
     border: 2px solid;
   }
   #btnBGM {
-    background: #ffffff;
+    background: #555;
     border-color: #555;
-    color: #fff;
+    color: #ccc;
   }
-  #btnBGM:hover { background: #ffffff; }
+  #btnBGM:hover { background: #666; }
   #btnBGM.on { background: #e74c3c; border-color: #e74c3c; }
   #btnFlower {
     background: #e74c3c;
@@ -141,23 +141,22 @@ const bgm = new Audio('BGM.mp3');
 bgm.loop = true;
 bgm.volume = 0.5;
 let bgmPlaying = false;
-function startBGM() {
+function resumeBGM() {
   if (bgmPlaying) return;
   bgmPlaying = true;
   document.getElementById('btnBGM').textContent = '♪ BGM 开';
   document.getElementById('btnBGM').classList.add('on');
   try { bgm.play().catch(() => {}); } catch(e) {}
 }
-function stopBGM() {
+function pauseBGM() {
   bgmPlaying = false;
   bgm.pause();
-  bgm.currentTime = 0;
-  document.getElementById('btnBGM').textContent = '♪ BGM';
+  document.getElementById('btnBGM').textContent = '♪ BGM 关';
   document.getElementById('btnBGM').classList.remove('on');
 }
-document.getElementById('btnBGM').addEventListener('click', () => { bgmPlaying ? stopBGM() : startBGM(); });
+document.getElementById('btnBGM').addEventListener('click', () => { bgmPlaying ? pauseBGM() : resumeBGM(); });
 // Auto-play BGM on first interaction (browser policy)
-document.addEventListener('click', () => { startBGM(); }, { once: true });
+document.addEventListener('click', () => { resumeBGM(); }, { once: true });
 
 // ========== FLOWERS ==========
 const flowerColors = ['#FF6B6B','#FF69B4','#FFB6C1','#FF1493','#FF4500','#FFD700','#FFA07A','#FF6347'];
