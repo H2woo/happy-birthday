@@ -155,8 +155,12 @@ function pauseBGM() {
   document.getElementById('btnBGM').classList.remove('on');
 }
 document.getElementById('btnBGM').addEventListener('click', () => { bgmPlaying ? pauseBGM() : resumeBGM(); });
-// Auto-play BGM on first interaction (browser policy)
-document.addEventListener('click', () => { resumeBGM(); }, { once: true });
+// 尝试自动播放BGM（浏览器可能限制）
+resumeBGM();
+// 如果自动播放被阻止，用户首次点击时播放
+document.addEventListener('click', () => {
+  if (!bgmPlaying) resumeBGM();
+}, { once: true });
 
 // ========== FLOWERS ==========
 const flowerColors = ['#FF6B6B','#FF69B4','#FFB6C1','#FF1493','#FF4500','#FFD700','#FFA07A','#FF6347'];
