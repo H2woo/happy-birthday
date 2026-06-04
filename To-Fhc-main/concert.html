@@ -20,6 +20,28 @@
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
+  /* 手机端旋转（由JS控制） */
+  body.rotate90 {
+    background: #000;
+  }
+  body.rotate90 .rotate-wrap {
+    transform: rotate(90deg);
+    transform-origin: center center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vh;
+    height: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  body.rotate90 .rotate-wrap canvas {
+    flex-shrink: 0;
+  }
+  body.rotate90 #controls {
+    transform: rotate(0deg);
+  }
   #controls {
     position: fixed;
     bottom: 30px;
@@ -118,16 +140,18 @@
 </head>
 <body>
 
-<canvas id="c"></canvas>
-<div id="controls">
-  <button id="btnBGM" class="on">♪ BGM</button>
-  <button id="btnFlower">🌸 送花</button>
-</div>
-<div id="disclaimer">本项目BGM源文件为互联网掉落自动拾取<br>采用开源项目seed-vc transformer<br>且并不将用于盈利<br>无任何侵权意图</div>
-<div id="chestModal"><img id="chestImg" src=""></div>
-<div id="orientationHint" class="orientation-hint">
-  <span class="orientation-hint-icon">↻</span>
-  <span>横屏体验更佳</span>
+<div class="rotate-wrap">
+  <canvas id="c"></canvas>
+  <div id="controls">
+    <button id="btnBGM" class="on">♪ BGM</button>
+    <button id="btnFlower">🌸 送花</button>
+  </div>
+  <div id="disclaimer">本项目BGM源文件为互联网掉落自动拾取<br>采用开源项目seed-vc transformer<br>且并不将用于盈利<br>无任何侵权意图</div>
+  <div id="chestModal"><img id="chestImg" src=""></div>
+  <div id="orientationHint" class="orientation-hint">
+    <span class="orientation-hint-icon">↻</span>
+    <span>横屏体验更佳</span>
+  </div>
 </div>
 
 <script>
@@ -195,12 +219,24 @@ function pauseBGM() {
   document.getElementById('btnBGM').classList.remove('on');
 }
 document.getElementById('btnBGM').addEventListener('click', () => { bgmPlaying ? pauseBGM() : resumeBGM(); });
-// 尝试自动播放BGM
-resumeBGM();
-// 如果自动播放被阻止，点击页面任意位置播放
-document.addEventListener('click', () => {
-  if (!bgmPlaying) resumeBGM();
-}, { once: true });
+// 使用 Web Audio API 解锁音频（兼容更多移动浏览器）
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function unlockAudio() {
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().then(() => {
+      // 音频上下文已解锁，尝试播放BGM
+      if (!bgmPlaying) resumeBGM();
+    });
+  } else if (!bgmPlaying) {
+    resumeBGM();
+  }
+}
+// 页面加载后尝试解锁音频
+unlockAudio();
+// 首次点击时再次尝试
+document.addEventListener('click', unlockAudio, { once: true });
+// 用户触摸时也尝试
+document.addEventListener('touchstart', unlockAudio, { once: true });
 
 // ========== FLOWERS ==========
 const flowerColors = ['#FF6B6B','#FF69B4','#FFB6C1','#FF1493','#FF4500','#FFD700','#FFA07A','#FF6347'];
@@ -884,20 +920,17 @@ canvas.addEventListener('click', function(e) {
 
 console.log('像素演唱会已开幕！');
 
-// ========== 横屏检测 ==========
-const hintEl = document.getElementById('orientationHint');
-function checkOrientation() {
+// ========== 手机端旋转90°横屏显示 ==========
+// 检测是否为手机（宽<768px）且竖屏
+function applyMobileRotate() {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  if (w < 768 && h > w) {
-    hintEl.classList.add('show');
-  } else {
-    hintEl.classList.remove('show');
-  }
+  const isMobilePortrait = w < 768 && h > w;
+  document.body.classList.toggle('rotate90', isMobilePortrait);
 }
-checkOrientation();
-window.addEventListener('resize', checkOrientation);
-window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 300));
+applyMobileRotate();
+window.addEventListener('resize', applyMobileRotate);
+window.addEventListener('orientationchange', () => setTimeout(applyMobileRotate, 300));
 </script>
 </body>
 </html>
