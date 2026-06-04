@@ -54,6 +54,34 @@
     background: #ff6b6b;
     box-shadow: 0 0 30px rgba(231,76,60,0.7);
   }
+  /* 横屏提示 - 角落小标签 */
+  .orientation-hint {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .orientation-hint.show {
+    display: flex;
+  }
+  .orientation-hint-icon {
+    display: inline-block;
+    animation: rotate-phone 2s ease-in-out infinite;
+    font-size: 16px;
+  }
+  @keyframes rotate-phone {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(90deg); }
+  }
   #disclaimer {
     position: fixed;
     bottom: 80px;
@@ -97,6 +125,10 @@
 </div>
 <div id="disclaimer">本项目BGM源文件为互联网掉落自动拾取<br>采用开源项目seed-vc transformer<br>且并不将用于盈利<br>无任何侵权意图</div>
 <div id="chestModal"><img id="chestImg" src=""></div>
+<div id="orientationHint" class="orientation-hint">
+  <span class="orientation-hint-icon">↻</span>
+  <span>横屏体验更佳</span>
+</div>
 
 <script>
 const canvas = document.getElementById('c');
@@ -146,7 +178,15 @@ function resumeBGM() {
   bgmPlaying = true;
   document.getElementById('btnBGM').textContent = '♪ BGM 开';
   document.getElementById('btnBGM').classList.add('on');
-  try { bgm.play().catch(() => {}); } catch(e) {}
+  const playPromise = bgm.play();
+  if (playPromise) {
+    playPromise.catch(() => {
+      // 自动播放被浏览器阻止，还原状态
+      bgmPlaying = false;
+      document.getElementById('btnBGM').textContent = '♪ BGM';
+      document.getElementById('btnBGM').classList.remove('on');
+    });
+  }
 }
 function pauseBGM() {
   bgmPlaying = false;
@@ -155,9 +195,9 @@ function pauseBGM() {
   document.getElementById('btnBGM').classList.remove('on');
 }
 document.getElementById('btnBGM').addEventListener('click', () => { bgmPlaying ? pauseBGM() : resumeBGM(); });
-// 尝试自动播放BGM（浏览器可能限制）
+// 尝试自动播放BGM
 resumeBGM();
-// 如果自动播放被阻止，用户首次点击时播放
+// 如果自动播放被阻止，点击页面任意位置播放
 document.addEventListener('click', () => {
   if (!bgmPlaying) resumeBGM();
 }, { once: true });
@@ -843,6 +883,21 @@ canvas.addEventListener('click', function(e) {
 });
 
 console.log('像素演唱会已开幕！');
+
+// ========== 横屏检测 ==========
+const hintEl = document.getElementById('orientationHint');
+function checkOrientation() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  if (w < 768 && h > w) {
+    hintEl.classList.add('show');
+  } else {
+    hintEl.classList.remove('show');
+  }
+}
+checkOrientation();
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', () => setTimeout(checkOrientation, 300));
 </script>
 </body>
 </html>
