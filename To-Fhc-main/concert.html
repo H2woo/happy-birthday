@@ -25,8 +25,6 @@
     background: #000;
   }
   body.rotate90 .rotate-wrap {
-    transform: rotate(90deg);
-    transform-origin: center center;
     position: fixed;
     top: 0;
     left: 0;
@@ -38,9 +36,6 @@
   }
   body.rotate90 .rotate-wrap canvas {
     flex-shrink: 0;
-  }
-  body.rotate90 #controls {
-    transform: rotate(0deg);
   }
   #controls {
     position: fixed;
@@ -921,12 +916,34 @@ canvas.addEventListener('click', function(e) {
 console.log('像素演唱会已开幕！');
 
 // ========== 手机端旋转90°横屏显示 ==========
-// 检测是否为手机（宽<768px）且竖屏
+const rotateWrap = document.querySelector('.rotate-wrap');
 function applyMobileRotate() {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const isMobilePortrait = w < 768 && h > w;
   document.body.classList.toggle('rotate90', isMobilePortrait);
+  if (isMobilePortrait) {
+    // 居中后旋转90°，填满屏幕
+    rotateWrap.style.position = 'fixed';
+    rotateWrap.style.top = '50%';
+    rotateWrap.style.left = '50%';
+    rotateWrap.style.width = h + 'px';
+    rotateWrap.style.height = w + 'px';
+    rotateWrap.style.marginLeft = (-h/2) + 'px';
+    rotateWrap.style.marginTop = (-w/2) + 'px';
+    rotateWrap.style.transform = 'rotate(90deg)';
+    rotateWrap.style.transformOrigin = 'center center';
+  } else {
+    rotateWrap.style.position = '';
+    rotateWrap.style.top = '';
+    rotateWrap.style.left = '';
+    rotateWrap.style.width = '';
+    rotateWrap.style.height = '';
+    rotateWrap.style.marginLeft = '';
+    rotateWrap.style.marginTop = '';
+    rotateWrap.style.transform = '';
+    rotateWrap.style.transformOrigin = '';
+  }
 }
 applyMobileRotate();
 window.addEventListener('resize', applyMobileRotate);
